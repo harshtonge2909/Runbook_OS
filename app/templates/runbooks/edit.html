@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Runbook - {{ runbook.title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-xl-10">
+        <!-- Header -->
+        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mb-4">
+            <div class="d-flex align-items-center gap-3">
+                <a href="{{ url_for('web.runbook_details', id=runbook.id) }}" class="btn btn-outline-devops p-2">
+                    <i class="bi bi-arrow-left fs-5"></i>
+                </a>
+                <div>
+                    <div class="d-flex align-items-center gap-2">
+                        <h2 class="fw-bold text-white mb-0">Edit Runbook</h2>
+                        <span class="badge badge-version">v{{ runbook.version }}</span>
+                    </div>
+                    <p class="text-muted small mb-0">{{ runbook.title }}</p>
+                </div>
+            </div>
+        </div>
+
+        <form method="POST" action="{{ url_for('web.edit_runbook', id=runbook.id) }}" id="runbook-form">
+            {{ form.hidden_tag() }}
+
+            <!-- General Details Card -->
+            <div class="card card-devops p-3 p-md-4 mb-4">
+                <h5 class="fw-bold text-white mb-3"><i class="bi bi-card-heading me-2 text-indigo"></i>General Information</h5>
+                
+                <div class="mb-3">
+                    <label for="title" class="form-label">Procedure Title</label>
+                    {{ form.title(class="form-control form-control-devops", id="title", required=true) }}
+                    {% if form.title.errors %}
+                        <div class="text-danger small mt-1">{{ form.title.errors[0] }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label for="description" class="form-label">Scope & Overview</label>
+                    {{ form.description(class="form-control form-control-devops", rows=3, id="description") }}
+                    {% if form.description.errors %}
+                        <div class="text-danger small mt-1">{{ form.description.errors[0] }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="row">
+                    <div class="col-12 col-sm-4">
+                        <label for="status" class="form-label">Status</label>
+                        {{ form.status(class="form-select form-select-devops", id="status") }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Steps Container -->
+            <div class="card card-devops p-3 p-md-4 mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h5 class="fw-bold text-white mb-0"><i class="bi bi-list-ol me-2 text-indigo"></i>Sequential Steps</h5>
+                        <p class="text-muted small mb-0">Modify, reorder, or add procedural instructions</p>
+                    </div>
+                    <button type="button" class="btn btn-outline-devops btn-sm d-flex align-items-center gap-1" id="add-step-btn">
+                        <i class="bi bi-plus-lg"></i> Add Step
+                    </button>
+                </div>
+
+                <div id="steps-container">
+                    {% for step in runbook.steps %}
+                    <div class="step-card card-devops p-3 mb-3 border-secondary">
+                        <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-secondary">
+                            <span class="step-order-badge badge bg-indigo-subtle text-indigo border border-indigo-subtle px-2 py-1">Step {{ loop.index }}</span>
+                            <button type="button" class="btn btn-sm btn-outline-danger btn-remove-step" {% if runbook.steps | length <= 1 %}style="display: none;"{% endif %}>
+                                <i class="bi bi-trash"></i> Remove
+                            </button>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Step Title</label>
+                            <input type="text" class="form-control form-control-devops step-title-input" 
+                                value="{{ step.title }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Instructions / Commands</label>
+                            <textarea class="form-control form-control-devops font-monospace step-instructions-input" 
+                                rows="3" required>{{ step.instructions }}</textarea>
+                        </div>
+                        <div>
+                            <label class="form-label">Expected Outcome</label>
+                            <input type="text" class="form-control form-control-devops step-expected-input" 
+                                value="{{ step.expected_outcome or '' }}">
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="d-flex justify-content-end gap-2 pb-5">
+                <a href="{{ url_for('web.runbook_details', id=runbook.id) }}" class="btn btn-outline-devops">Cancel</a>
+                <button type="submit" class="btn btn-primary-devops d-flex align-items-center gap-2">
+                    <i class="bi bi-check2"></i>
+                    <span>Update Runbook</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/runbook_form.js') }}"></script>
+{% endblock %}

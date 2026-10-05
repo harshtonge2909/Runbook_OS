@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Version History - {{ runbook.title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-xl-10">
+        <!-- Header -->
+        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mb-4">
+            <div class="d-flex align-items-center gap-3">
+                <a href="{{ url_for('web.runbook_details', id=runbook.id) }}" class="btn btn-outline-devops p-2">
+                    <i class="bi bi-arrow-left fs-5"></i>
+                </a>
+                <div>
+                    <h2 class="fw-bold text-white mb-0">Version History</h2>
+                    <p class="text-muted small mb-0">{{ runbook.title }}</p>
+                </div>
+            </div>
+
+            <!-- Create New Version Button -->
+            <form method="POST" action="{{ url_for('web.create_version', id=runbook.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-primary-devops btn-sm d-flex align-items-center gap-2">
+                    <i class="bi bi-plus-circle"></i>
+                    <span>Snapshot New Version</span>
+                </button>
+            </form>
+        </div>
+
+        <!-- Versions Timeline -->
+        <div class="card card-devops p-4">
+            <h5 class="fw-bold text-white mb-4"><i class="bi bi-clock-history me-2 text-indigo"></i>Version Lineage</h5>
+
+            <div class="list-group list-group-flush bg-transparent">
+                {% for v in versions %}
+                <div class="list-group-item bg-transparent border-secondary py-3 px-2">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+                        <div>
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <span class="badge badge-version fs-6">v{{ v.version }}</span>
+                                <a href="{{ url_for('web.runbook_details', id=v.id) }}" class="text-white fw-semibold text-decoration-none">
+                                    {{ v.title }}
+                                </a>
+                                {% if v.id == runbook.id %}
+                                    <span class="badge bg-indigo-subtle text-indigo border border-indigo-subtle small">Current</span>
+                                {% endif %}
+                            </div>
+                            <div class="text-muted small">
+                                <span>{{ v.steps | length }} sequential steps</span> • 
+                                <span>Created on {{ v.created_at.strftime('%B %d, %Y at %H:%M') }}</span>
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-center gap-2">
+                            <a href="{{ url_for('web.runbook_details', id=v.id) }}" class="btn btn-outline-devops btn-sm">
+                                View Specification
+                            </a>
+                            <form method="POST" action="{{ url_for('web.execute_runbook', id=v.id) }}" class="d-inline">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-outline-success btn-sm">
+                                    Execute v{{ v.version }}
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <p class="text-muted text-center py-4">No version history records found.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

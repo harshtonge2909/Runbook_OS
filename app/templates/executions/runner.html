@@ -1,0 +1,239 @@
+{% extends "base.html" %}
+
+{% block title %}Execution #{{ execution.id }} - {{ runbook.title }}{% endblock %}
+
+{% block content %}
+<div id="execution-runner" 
+    data-execution-id="{{ execution.id }}"
+    data-step-title="{{ current_step.title if current_step else '' }}"
+    data-step-instructions="{{ current_step.instructions if current_step else '' }}"
+    data-step-expected="{{ current_step.expectedOutcome or current_step.expected_outcome if current_step else '' }}">
+
+    <!-- Header Navigation -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div class="d-flex align-items-center gap-3">
+            <a href="{{ url_for('web.runbook_details', id=runbook.id) }}" class="btn btn-outline-devops p-2" title="Return to Runbook">
+                <i class="bi bi-arrow-left fs-5"></i>
+            </a>
+            <div>
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <h2 class="fw-bold text-white mb-0">Execution #{{ execution.id }}</h2>
+                    {% if execution.status == 'Running' %}
+                        <span class="badge badge-running">Running</span>
+                    {% elif execution.status == 'Completed' %}
+                        <span class="badge badge-completed">Completed</span>
+                    {% else %}
+                        <span class="badge badge-failed">{{ execution.status }}</span>
+                    {% endif %}
+                    <span class="badge badge-version">v{{ execution.version }}</span>
+                </div>
+                <div class="text-muted small mt-1">
+                    <span>Runbook: <strong class="text-white">{{ runbook.title }}</strong></span> • 
+                    <span>Operator: {{ execution.started_by.name if execution.started_by else 'SRE' }}</span> • 
+                    <span>Started: {{ execution.started_at.strftime('%H:%M:%S (%b %d)') }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+            {% if execution.status != 'Completed' %}
+                {% if groq_configured %}
+                <button type="button" class="btn btn-outline-devops btn-sm d-flex align-items-center gap-1" 
+                    data-bs-toggle="modal" data-bs-target="#groqAiTroubleshootModal">
+                    <i class="bi bi-stars text-warning"></i>
+                    <span>Ask Groq AI Troubleshooter</span>
+                </button>
+                {% endif %}
+
+                {% if is_last_step %}
+                <button type="button" class="btn btn-success d-flex align-items-center gap-2" id="btn-complete-execution">
+                    <i class="bi bi-check2-circle"></i>
+                    <span>Finish Execution</span>
+                </button>
+                {% else %}
+                <button type="button" class="btn btn-primary-devops d-flex align-items-center gap-2" id="btn-next-step">
+                    <i class="bi bi-arrow-right"></i>
+                    <span>Next Step</span>
+                </button>
+                {% endif %}
+            {% else %}
+                <a href="{{ url_for('web.runbook_details', id=runbook.id) }}" class="btn btn-primary-devops btn-sm">
+                    Back to Runbook
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Progress Bar Card -->
+    <div class="card card-devops p-3 mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="text-muted small">
+                {% if execution.status == 'Completed' %}
+                    All {{ total_steps }} steps completed
+                {% else %}
+                    Step {{ current_idx + 1 }} of {{ total_steps }} in progress
+                {% endif %}
+            </span>
+            <span class="fw-bold text-indigo">{{ progress_pct }}%</span>
+        </div>
+        <div class="progress bg-dark-subtle" style="height: 10px;">
+            <div class="progress-bar bg-indigo" role="progressbar" style="width: {{ progress_pct }}%;" 
+                aria-valuenow="{{ progress_pct }}" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+    </div>
+
+    <!-- Main Execution Workspace -->
+    <div class="row g-4">
+        <!-- Left: Active Step Execution View -->
+        <div class="col-12 col-lg-8">
+            {% if execution.status == 'Completed' %}
+            <div class="card card-devops p-5 text-center">
+                <div class="d-inline-flex p-4 rounded-circle bg-success-subtle text-success mx-auto mb-3">
+                    <i class="bi bi-patch-check-fill fs-1"></i>
+                </div>
+                <h3 class="fw-bold text-white mb-2">Operational Execution Completed!</h3>
+                <p class="text-muted mb-4">
+                    All procedural tasks and validation checkpoints were executed successfully.
+                    {% if execution.completed_at %}
+                    <br><span class="small">Completed at: {{ execution.completed_at.strftime('%B %d, %Y at %H:%M:%S') }}</span>
+                    {% endif %}
+                </p>
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="{{ url_for('web.runbook_details', id=runbook.id) }}" class="btn btn-outline-devops">
+                        Return to Runbook
+                    </a>
+                    <a href="{{ url_for('web.execution_list') }}" class="btn btn-primary-devops">
+                        View Executions Log
+                    </a>
+                </div>
+            </div>
+            {% elif current_step %}
+            <div class="card card-devops p-3 p-md-4">
+                <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-secondary">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-indigo text-white font-monospace px-2 py-1">Step {{ current_idx + 1 }} of {{ total_steps }}</span>
+                        <h4 class="text-white fw-bold mb-0">{{ current_step.title }}</h4>
+                    </div>
+                </div>
+
+                <!-- Instructions -->
+                <div class="mb-4">
+                    <div class="form-label text-muted mb-2"><i class="bi bi-terminal me-1"></i> Operational Instructions</div>
+                    <div class="terminal-block">{{ current_step.instructions }}</div>
+                </div>
+
+                <!-- Expected Outcome -->
+                {% if current_step.expectedOutcome or current_step.expected_outcome %}
+                <div class="mb-4 p-3 rounded-2 bg-success-subtle border border-success-subtle text-success">
+                    <div class="fw-semibold text-uppercase small mb-1"><i class="bi bi-check-circle me-1"></i> Expected Verification Outcome:</div>
+                    <div class="text-light">{{ current_step.expectedOutcome or current_step.expected_outcome }}</div>
+                </div>
+                {% endif %}
+
+                <!-- Footer Step Controls -->
+                <div class="d-flex justify-content-between align-items-center pt-3 border-top border-secondary">
+                    {% if groq_configured %}
+                    <button type="button" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1"
+                        data-bs-toggle="modal" data-bs-target="#groqAiTroubleshootModal">
+                        <i class="bi bi-question-circle text-warning"></i> Need help with this step?
+                    </button>
+                    {% else %}
+                    <div></div>
+                    {% endif %}
+
+                    {% if is_last_step %}
+                    <button type="button" class="btn btn-success d-flex align-items-center gap-2" onclick="document.getElementById('btn-complete-execution').click()">
+                        <i class="bi bi-check2-circle"></i> Complete Procedure
+                    </button>
+                    {% else %}
+                    <button type="button" class="btn btn-primary-devops d-flex align-items-center gap-2" onclick="document.getElementById('btn-next-step').click()">
+                        <i class="bi bi-arrow-right"></i> Mark Step Complete & Proceed
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+            {% else %}
+            <div class="card card-devops p-4 text-center text-muted">
+                No active step found for this execution.
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Right: Sequential Step Checklist -->
+        <div class="col-12 col-lg-4">
+            <div class="card card-devops p-3">
+                <h6 class="fw-bold text-white mb-3"><i class="bi bi-card-checklist me-2 text-indigo"></i>Step Progression</h6>
+
+                <div class="step-checklist">
+                    {% for s in steps %}
+                        {% set is_completed = loop.index0 < current_idx or execution.status == 'Completed' %}
+                        {% set is_active = loop.index0 == current_idx and execution.status != 'Completed' %}
+                        <div class="step-checklist-item {% if is_active %}current{% elif is_completed %}completed{% endif %}">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="badge {% if is_completed %}bg-success{% elif is_active %}bg-indigo{% else %}bg-secondary{% endif %} rounded-pill">
+                                        {{ loop.index }}
+                                    </span>
+                                    <span class="text-white small fw-medium">{{ s.title }}</span>
+                                </div>
+                                {% if is_completed %}
+                                    <i class="bi bi-check-circle-fill text-success"></i>
+                                {% elif is_active %}
+                                    <span class="spinner-grow spinner-grow-sm text-indigo" role="status"></span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Groq AI Step Troubleshooter Modal -->
+{% if groq_configured %}
+<div class="modal fade" id="groqAiTroubleshootModal" tabindex="-1" aria-labelledby="groqAiTroubleshootLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content modal-content-devops">
+            <div class="modal-header">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-stars text-warning fs-5"></i>
+                    <h5 class="modal-title text-white" id="groqAiTroubleshootLabel">Groq Llama Step Troubleshooter</h5>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted small">
+                    If this step failed, threw an error, or showed unexpected output, describe what happened. Groq Llama will analyze the error in the context of this step and provide remediation commands.
+                </p>
+                <div class="mb-3">
+                    <label for="troubleshoot-observation" class="form-label">Observed Output / Error Details</label>
+                    <textarea class="form-control form-control-devops font-monospace" id="troubleshoot-observation" rows="4" 
+                        placeholder="Paste terminal error trace or unexpected output..."></textarea>
+                </div>
+
+                <div id="troubleshoot-spinner" class="d-none text-center my-3">
+                    <div class="spinner-border text-indigo" role="status"></div>
+                    <div class="text-muted small mt-2">Groq Llama model is diagnosing the issue...</div>
+                </div>
+
+                <div id="troubleshoot-ai-response" class="d-none">
+                    <h6 class="fw-bold text-indigo mb-2"><i class="bi bi-lightbulb me-1"></i> AI Diagnostic Recommendation:</h6>
+                    <div class="terminal-block" id="troubleshoot-ai-content"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-devops" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary-devops" id="btn-submit-troubleshoot">
+                    <i class="bi bi-cpu me-1"></i> Analyze & Triage
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/execution.js') }}"></script>
+{% endblock %}

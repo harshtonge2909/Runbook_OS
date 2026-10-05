@@ -1,0 +1,288 @@
+/* RunbookOS - Sleek Dark DevOps Theme */
+
+:root {
+    --rb-bg-base: #0b0f17;
+    --rb-bg-surface: #111827;
+    --rb-bg-surface-elevated: #1f2937;
+    --rb-bg-subtle: #0f172a;
+    --rb-border: #1e293b;
+    --rb-border-hover: #334155;
+    --rb-text-primary: #f8fafc;
+    --rb-text-muted: #94a3b8;
+    --rb-accent: #6366f1;
+    --rb-accent-hover: #4f46e5;
+    --rb-accent-light: rgba(99, 102, 241, 0.15);
+    --rb-success: #10b981;
+    --rb-success-bg: rgba(16, 185, 129, 0.12);
+    --rb-warning: #f59e0b;
+    --rb-warning-bg: rgba(245, 158, 11, 0.12);
+    --rb-danger: #ef4444;
+    --rb-danger-bg: rgba(239, 68, 68, 0.12);
+}
+
+body {
+    background-color: var(--rb-bg-base);
+    color: var(--rb-text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    min-height: 100vh;
+}
+
+/* Navbar */
+.navbar-custom {
+    background-color: var(--rb-bg-surface);
+    border-bottom: 1px solid var(--rb-border);
+}
+
+.navbar-brand {
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: #fff !important;
+}
+
+.brand-badge {
+    background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-left: 6px;
+    color: white;
+}
+
+/* Sidebar & Nav Links */
+.nav-link-custom {
+    color: var(--rb-text-muted);
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 0.5rem 0.85rem;
+    border-radius: 6px;
+    transition: all 0.15s ease-in-out;
+}
+
+.nav-link-custom:hover {
+    color: #fff;
+    background-color: var(--rb-bg-surface-elevated);
+}
+
+.nav-link-custom.active {
+    color: #fff;
+    background-color: var(--rb-accent-light);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+}
+
+/* Cards */
+.card-devops {
+    background-color: var(--rb-bg-surface);
+    border: 1px solid var(--rb-border);
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
+    transition: border-color 0.2s ease, transform 0.15s ease;
+}
+
+.card-devops:hover {
+    border-color: var(--rb-border-hover);
+}
+
+.card-devops .card-header {
+    background-color: transparent;
+    border-bottom: 1px solid var(--rb-border);
+    padding: 1rem 1.25rem;
+    font-weight: 600;
+}
+
+.card-devops .card-body {
+    padding: 1.25rem;
+}
+
+/* Stat Cards */
+.stat-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+/* Tables */
+.table-devops {
+    color: var(--rb-text-primary);
+    margin-bottom: 0;
+}
+
+.table-devops thead th {
+    background-color: var(--rb-bg-subtle);
+    border-bottom: 1px solid var(--rb-border);
+    color: var(--rb-text-muted);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    padding: 0.85rem 1rem;
+}
+
+.table-devops tbody td {
+    border-bottom: 1px solid var(--rb-border);
+    padding: 1rem;
+    vertical-align: middle;
+}
+
+.table-devops tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+/* Forms */
+.form-control-devops, .form-select-devops {
+    background-color: var(--rb-bg-base);
+    border: 1px solid var(--rb-border);
+    color: var(--rb-text-primary);
+    border-radius: 8px;
+    padding: 0.6rem 0.85rem;
+    font-size: 0.9rem;
+}
+
+.form-control-devops:focus, .form-select-devops:focus {
+    background-color: var(--rb-bg-base);
+    border-color: var(--rb-accent);
+    color: var(--rb-text-primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+}
+
+.form-label {
+    color: var(--rb-text-muted);
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.4rem;
+}
+
+/* Code & Instructions Terminal Box */
+.terminal-block {
+    background-color: #030712;
+    border: 1px solid var(--rb-border);
+    border-radius: 8px;
+    padding: 1rem;
+    font-family: "JetBrains Mono", Consolas, "Courier New", monospace;
+    font-size: 0.875rem;
+    color: #e2e8f0;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+/* Badges */
+.badge-active {
+    background-color: var(--rb-success-bg);
+    color: var(--rb-success);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.badge-inactive {
+    background-color: rgba(148, 163, 184, 0.1);
+    color: #94a3b8;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.badge-running {
+    background-color: var(--rb-warning-bg);
+    color: var(--rb-warning);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.badge-completed {
+    background-color: var(--rb-success-bg);
+    color: var(--rb-success);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.badge-failed {
+    background-color: var(--rb-danger-bg);
+    color: var(--rb-danger);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.badge-version {
+    background-color: var(--rb-accent-light);
+    color: #818cf8;
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    font-family: monospace;
+}
+
+/* Buttons */
+.btn-primary-devops {
+    background-color: var(--rb-accent);
+    border: 1px solid var(--rb-accent);
+    color: #fff;
+    font-weight: 500;
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    transition: all 0.15s ease;
+}
+
+.btn-primary-devops:hover {
+    background-color: var(--rb-accent-hover);
+    border-color: var(--rb-accent-hover);
+    color: #fff;
+}
+
+.btn-outline-devops {
+    background-color: transparent;
+    border: 1px solid var(--rb-border);
+    color: var(--rb-text-primary);
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+}
+
+.btn-outline-devops:hover {
+    background-color: var(--rb-bg-surface-elevated);
+    border-color: var(--rb-border-hover);
+    color: #fff;
+}
+
+/* Modals */
+.modal-content-devops {
+    background-color: var(--rb-bg-surface);
+    border: 1px solid var(--rb-border);
+    color: var(--rb-text-primary);
+    border-radius: 12px;
+}
+
+.modal-content-devops .modal-header,
+.modal-content-devops .modal-footer {
+    border-color: var(--rb-border);
+}
+
+/* Checklist Step in Runner */
+.step-checklist-item {
+    border: 1px solid var(--rb-border);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.5rem;
+    transition: all 0.15s;
+    cursor: pointer;
+}
+
+.step-checklist-item.current {
+    border-color: var(--rb-accent);
+    background-color: var(--rb-accent-light);
+}
+
+.step-checklist-item.completed {
+    border-color: rgba(16, 185, 129, 0.4);
+    background-color: var(--rb-success-bg);
+}
+
+/* Toast container */
+#toast-container {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    z-index: 1090;
+}

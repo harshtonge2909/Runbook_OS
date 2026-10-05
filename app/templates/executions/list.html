@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Execution History - RunbookOS{% endblock %}
+
+{% block content %}
+<div class="space-y-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-white mb-1">Execution History</h2>
+            <p class="text-muted small mb-0">Audit log of all interactive runbook executions and operator runs</p>
+        </div>
+        <a href="{{ url_for('web.runbook_list') }}" class="btn btn-outline-devops btn-sm">
+            <i class="bi bi-journal-code me-1"></i> Browse Runbooks
+        </a>
+    </div>
+
+    <!-- Executions Table -->
+    <div class="card card-devops overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-devops">
+                <thead>
+                    <tr>
+                        <th>Execution ID</th>
+                        <th>Runbook Title</th>
+                        <th>Version</th>
+                        <th>Operator</th>
+                        <th>Status</th>
+                        <th>Started At</th>
+                        <th>Completed At</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ex in executions %}
+                    <tr>
+                        <td>
+                            <a href="{{ url_for('web.execution_runner', execution_id=ex.id) }}" class="font-monospace text-indigo fw-bold text-decoration-none">
+                                #{{ ex.id }}
+                            </a>
+                        </td>
+                        <td>
+                            <a href="{{ url_for('web.runbook_details', id=ex.runbook.id) if ex.runbook else '#' }}" class="text-white fw-semibold text-decoration-none">
+                                {{ ex.runbook.title if ex.runbook else 'Runbook #' ~ ex.runbook_id }}
+                            </a>
+                        </td>
+                        <td>
+                            <span class="badge badge-version">v{{ ex.version }}</span>
+                        </td>
+                        <td class="text-muted small">
+                            {{ ex.started_by.name if ex.started_by else 'Unknown' }}
+                        </td>
+                        <td>
+                            {% if ex.status == 'Running' %}
+                                <span class="badge badge-running">Running</span>
+                            {% elif ex.status == 'Completed' %}
+                                <span class="badge badge-completed">Completed</span>
+                            {% else %}
+                                <span class="badge badge-failed">{{ ex.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-muted small">
+                            {{ ex.started_at.strftime('%b %d, %Y %H:%M') }}
+                        </td>
+                        <td class="text-muted small">
+                            {{ ex.completed_at.strftime('%b %d, %Y %H:%M') if ex.completed_at else '—' }}
+                        </td>
+                        <td class="text-end">
+                            <a href="{{ url_for('web.execution_runner', execution_id=ex.id) }}" class="btn btn-sm btn-outline-devops py-1 px-2">
+                                <i class="bi bi-box-arrow-up-right me-1"></i> Open Runner
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center py-5 text-muted">
+                            <i class="bi bi-play-circle text-secondary fs-1 d-block mb-2"></i>
+                            <h5 class="text-white">No executions recorded</h5>
+                            <p class="small">Execute a runbook from the runbook details page to record interactive sessions.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if pagination.pages > 1 %}
+        <div class="card-footer bg-transparent border-top border-secondary py-3 d-flex justify-content-between align-items-center">
+            <span class="text-muted small">Showing page {{ pagination.page }} of {{ pagination.pages }}</span>
+            <nav aria-label="Execution pagination">
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                        <a class="page-link bg-transparent border-secondary text-muted" href="{{ url_for('web.execution_list', page=pagination.prev_num) }}">Previous</a>
+                    </li>
+                    {% for p in pagination.iter_pages() %}
+                        {% if p %}
+                        <li class="page-item {% if p == pagination.page %}active{% endif %}">
+                            <a class="page-link border-secondary {% if p == pagination.page %}bg-indigo border-indigo text-white{% else %}bg-transparent text-muted{% endif %}" 
+                                href="{{ url_for('web.execution_list', page=p) }}">{{ p }}</a>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                    <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                        <a class="page-link bg-transparent border-secondary text-muted" href="{{ url_for('web.execution_list', page=pagination.next_num) }}">Next</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

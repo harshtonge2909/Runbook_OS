@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - RunbookOS{% endblock %}
+
+{% block content %}
+<div class="space-y-4">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <h2 class="fw-bold text-white mb-1">Operational Dashboard</h2>
+            <p class="text-muted small mb-0">Real-time status of procedures, executions, and database telemetry</p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            {% if groq_configured %}
+            <button type="button" class="btn btn-outline-devops btn-sm d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#groqAiGeneratorModal">
+                <i class="bi bi-stars text-warning"></i>
+                <span>Draft with Groq AI</span>
+            </button>
+            {% endif %}
+            <a href="{{ url_for('web.create_runbook') }}" class="btn btn-primary-devops btn-sm d-flex align-items-center gap-2">
+                <i class="bi bi-plus-lg"></i>
+                <span>New Runbook</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- 6 Metric Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-sm-6 col-lg-4 col-xl-2">
+            <div class="card card-devops h-100 p-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small text-uppercase fw-semibold">Total Users</div>
+                        <h3 class="fw-bold text-white mt-1 mb-0">{{ stats.totalUsers }}</h3>
+                    </div>
+                    <div class="stat-icon bg-indigo-subtle text-indigo">
+                        <i class="bi bi-people"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-lg-4 col-xl-2">
+            <div class="card card-devops h-100 p-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small text-uppercase fw-semibold">Total Runbooks</div>
+                        <h3 class="fw-bold text-white mt-1 mb-0">{{ stats.totalRunbooks }}</h3>
+                    </div>
+                    <div class="stat-icon bg-primary-subtle text-primary">
+                        <i class="bi bi-journal-code"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-lg-4 col-xl-2">
+            <div class="card card-devops h-100 p-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small text-uppercase fw-semibold">Active Runbooks</div>
+                        <h3 class="fw-bold text-success mt-1 mb-0">{{ stats.activeRunbooks }}</h3>
+                    </div>
+                    <div class="stat-icon bg-success-subtle text-success">
+                        <i class="bi bi-check-circle"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-lg-4 col-xl-2">
+            <div class="card card-devops h-100 p-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small text-uppercase fw-semibold">Inactive</div>
+                        <h3 class="fw-bold text-secondary mt-1 mb-0">{{ stats.inactiveRunbooks }}</h3>
+                    </div>
+                    <div class="stat-icon bg-secondary-subtle text-secondary">
+                        <i class="bi bi-pause-circle"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-lg-4 col-xl-2">
+            <div class="card card-devops h-100 p-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small text-uppercase fw-semibold">Running</div>
+                        <h3 class="fw-bold text-warning mt-1 mb-0">{{ stats.runningExecutions }}</h3>
+                    </div>
+                    <div class="stat-icon bg-warning-subtle text-warning">
+                        <i class="bi bi-play-circle"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-lg-4 col-xl-2">
+            <div class="card card-devops h-100 p-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small text-uppercase fw-semibold">Completed</div>
+                        <h3 class="fw-bold text-info mt-1 mb-0">{{ stats.completedExecutions }}</h3>
+                    </div>
+                    <div class="stat-icon bg-info-subtle text-info">
+                        <i class="bi bi-patch-check"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Tables Section -->
+    <div class="row g-4">
+        <!-- Recent Runbooks -->
+        <div class="col-12 col-lg-7">
+            <div class="card card-devops h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span class="text-white"><i class="bi bi-journal-text me-2 text-indigo"></i>Recent Active Runbooks</span>
+                    <a href="{{ url_for('web.runbook_list') }}" class="text-indigo small text-decoration-none">View All</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-devops">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Version</th>
+                                <th>Steps</th>
+                                <th>Created</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for rb in recent_runbooks %}
+                            <tr>
+                                <td>
+                                    <a href="{{ url_for('web.runbook_details', id=rb.id) }}" class="fw-semibold text-white text-decoration-none d-block">
+                                        {{ rb.title }}
+                                    </a>
+                                    {% if rb.description %}
+                                    <span class="text-muted small d-inline-block text-truncate" style="max-width: 250px;">{{ rb.description }}</span>
+                                    {% endif %}
+                                </td>
+                                <td><span class="badge badge-version">v{{ rb.version }}</span></td>
+                                <td><span class="font-monospace small text-muted">{{ rb.steps | length }} steps</span></td>
+                                <td class="text-muted small">{{ rb.created_at.strftime('%b %d, %Y') }}</td>
+                                <td class="text-end">
+                                    <form method="POST" action="{{ url_for('web.execute_runbook', id=rb.id) }}" class="d-inline">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-success py-1 px-2" title="Execute Procedure">
+                                            <i class="bi bi-play-fill"></i> Execute
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center py-4 text-muted">No runbooks available. Create one to get started!</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Executions -->
+        <div class="col-12 col-lg-5">
+            <div class="card card-devops h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span class="text-white"><i class="bi bi-activity me-2 text-warning"></i>Recent Executions</span>
+                    <a href="{{ url_for('web.execution_list') }}" class="text-indigo small text-decoration-none">View All</a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush bg-transparent">
+                        {% for ex in recent_executions %}
+                        <a href="{{ url_for('web.execution_runner', execution_id=ex.id) }}" class="list-group-item list-group-item-action bg-transparent border-secondary text-white py-3 px-3">
+                            <div class="d-flex justify-content-between align-items-start mb-1">
+                                <span class="fw-semibold">{{ ex.runbook.title if ex.runbook else 'Runbook #' ~ ex.runbook_id }}</span>
+                                {% if ex.status == 'Running' %}
+                                    <span class="badge badge-running">Running</span>
+                                {% elif ex.status == 'Completed' %}
+                                    <span class="badge badge-completed">Completed</span>
+                                {% else %}
+                                    <span class="badge badge-failed">{{ ex.status }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="d-flex justify-content-between text-muted small">
+                                <span><i class="bi bi-person me-1"></i>{{ ex.started_by.name if ex.started_by else 'Operator' }}</span>
+                                <span><i class="bi bi-clock me-1"></i>{{ ex.started_at.strftime('%H:%M:%S (%b %d)') }}</span>
+                            </div>
+                        </a>
+                        {% else %}
+                        <div class="text-center py-4 text-muted">No executions recorded yet.</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Groq AI Runbook Generator Modal -->
+{% if groq_configured %}
+<div class="modal fade" id="groqAiGeneratorModal" tabindex="-1" aria-labelledby="groqAiGeneratorModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content modal-content-devops">
+            <div class="modal-header">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-stars text-warning fs-5"></i>
+                    <h5 class="modal-title text-white" id="groqAiGeneratorModalLabel">Groq Llama Runbook Architect</h5>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted small">
+                    Provide an operational task, incident symptom, or troubleshooting objective. Groq Llama will synthesize a structured runbook with sequential steps, verification commands, and expected outcomes.
+                </p>
+                <div class="mb-3">
+                    <label for="ai-prompt-input" class="form-label">Procedure Prompt / Objective</label>
+                    <textarea class="form-control form-control-devops font-monospace" id="ai-prompt-input" rows="4" 
+                        placeholder="e.g. PostgreSQL replication lag exceeding 100MB on standby node in AWS us-east-1"></textarea>
+                </div>
+                <div id="ai-generation-spinner" class="d-none text-center my-3">
+                    <div class="spinner-border text-indigo" role="status"></div>
+                    <div class="text-muted small mt-2">Groq Llama model is generating production-grade procedural steps...</div>
+                </div>
+                <div id="ai-generation-error" class="alert alert-danger d-none small"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-devops" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary-devops" id="btn-execute-ai-generation">
+                    <i class="bi bi-lightning-charge me-1"></i> Generate Runbook
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/runbook_form.js') }}"></script>
+{% endblock %}

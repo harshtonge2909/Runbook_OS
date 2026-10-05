@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Register Account - RunbookOS{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center" style="min-height: 75vh;">
+    <div class="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-5">
+        <div class="card card-devops p-3 p-sm-4">
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <div class="d-inline-flex p-3 rounded-circle bg-indigo-subtle text-indigo mb-2">
+                        <i class="bi bi-person-plus fs-2"></i>
+                    </div>
+                    <h3 class="fw-bold text-white mb-1">Create Operator Account</h3>
+                    <p class="text-muted small">Join your team's operational runbook hub</p>
+                </div>
+
+                <form method="POST" action="{{ url_for('web.register') }}">
+                    {{ form.hidden_tag() }}
+
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Full Name</label>
+                        {{ form.name(class="form-control form-control-devops", placeholder="Alex Morgan", id="name", autofocus=true) }}
+                        {% if form.name.errors %}
+                            <div class="text-danger small mt-1">{{ form.name.errors[0] }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email Address</label>
+                        {{ form.email(class="form-control form-control-devops", placeholder="alex@company.com", id="email") }}
+                        {% if form.email.errors %}
+                            <div class="text-danger small mt-1">{{ form.email.errors[0] }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="role" class="form-label">Role</label>
+                        {{ form.role(class="form-select form-select-devops", id="role") }}
+                        {% if form.role.errors %}
+                            <div class="text-danger small mt-1">{{ form.role.errors[0] }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-sm-6">
+                            <label for="password" class="form-label">Password</label>
+                            {{ form.password(class="form-control form-control-devops", placeholder="••••••••", id="password") }}
+                            {% if form.password.errors %}
+                                <div class="text-danger small mt-1">{{ form.password.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="confirm_password" class="form-label">Confirm Password</label>
+                            {{ form.confirm_password(class="form-control form-control-devops", placeholder="••••••••", id="confirm_password") }}
+                            {% if form.confirm_password.errors %}
+                                <div class="text-danger small mt-1">{{ form.confirm_password.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary-devops w-100 py-2 d-flex align-items-center justify-content-center gap-2">
+                        <i class="bi bi-check2-circle"></i>
+                        <span>Register Account</span>
+                    </button>
+                </form>
+
+                <div class="text-center mt-4">
+                    <span class="text-muted small">Already have credentials? </span>
+                    <a href="{{ url_for('web.login') }}" class="text-indigo small fw-semibold text-decoration-none">Sign in</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

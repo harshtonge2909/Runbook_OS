@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Sign In - RunbookOS{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center" style="min-height: 75vh;">
+    <div class="col-12 col-sm-9 col-md-7 col-lg-5 col-xl-4">
+        <div class="card card-devops p-3 p-sm-4">
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <div class="d-inline-flex p-3 rounded-circle bg-indigo-subtle text-indigo mb-2">
+                        <i class="bi bi-shield-lock fs-2"></i>
+                    </div>
+                    <h3 class="fw-bold text-white mb-1">Operator Sign In</h3>
+                    <p class="text-muted small">Access your operational runbooks and telemetry</p>
+                </div>
+
+                <form method="POST" action="{{ url_for('web.login', next=request.args.get('next')) }}">
+                    {{ form.hidden_tag() }}
+
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email Address</label>
+                        {{ form.email(class="form-control form-control-devops", placeholder="admin@runbookos.dev", id="email", autofocus=true) }}
+                        {% if form.email.errors %}
+                            <div class="text-danger small mt-1">{{ form.email.errors[0] }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        {{ form.password(class="form-control form-control-devops", placeholder="••••••••", id="password") }}
+                        {% if form.password.errors %}
+                            <div class="text-danger small mt-1">{{ form.password.errors[0] }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-4 form-check">
+                        {{ form.remember(class="form-check-input", id="remember") }}
+                        <label class="form-check-label text-muted small" for="remember">Keep me signed in</label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary-devops w-100 py-2 d-flex align-items-center justify-content-center gap-2">
+                        <i class="bi bi-box-arrow-in-right"></i>
+                        <span>Authenticate</span>
+                    </button>
+                </form>
+
+                <!-- Demo helper box -->
+                <div class="mt-4 p-3 rounded-3 bg-dark-subtle border border-secondary text-muted small">
+                    <div class="fw-semibold text-white mb-1"><i class="bi bi-info-circle me-1"></i> Default Seed Credentials:</div>
+                    <div><strong>Admin:</strong> admin@runbookos.dev / Admin@123456</div>
+                    <div><strong>Engineer:</strong> engineer@runbookos.dev / Engineer@123456</div>
+                </div>
+
+                <div class="text-center mt-4">
+                    <span class="text-muted small">Need an account? </span>
+                    <a href="{{ url_for('web.register') }}" class="text-indigo small fw-semibold text-decoration-none">Register here</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

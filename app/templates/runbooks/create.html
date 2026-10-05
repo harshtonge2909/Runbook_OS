@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}Create Runbook - RunbookOS{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-xl-10">
+        <!-- Header -->
+        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mb-4">
+            <div class="d-flex align-items-center gap-3">
+                <a href="{{ url_for('web.runbook_list') }}" class="btn btn-outline-devops p-2">
+                    <i class="bi bi-arrow-left fs-5"></i>
+                </a>
+                <div>
+                    <h2 class="fw-bold text-white mb-0">Create Runbook</h2>
+                    <p class="text-muted small mb-0">Define an operational procedure with ordered verification steps</p>
+                </div>
+            </div>
+
+            {% if groq_configured %}
+            <button type="button" class="btn btn-outline-devops btn-sm d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#groqAiGeneratorModal">
+                <i class="bi bi-stars text-warning"></i>
+                <span>Draft with Groq AI</span>
+            </button>
+            {% endif %}
+        </div>
+
+        <form method="POST" action="{{ url_for('web.create_runbook') }}" id="runbook-form">
+            {{ form.hidden_tag() }}
+
+            <!-- General Details Card -->
+            <div class="card card-devops p-3 p-md-4 mb-4">
+                <h5 class="fw-bold text-white mb-3"><i class="bi bi-card-heading me-2 text-indigo"></i>General Information</h5>
+                
+                <div class="mb-3">
+                    <label for="title" class="form-label">Procedure Title</label>
+                    {{ form.title(class="form-control form-control-devops", placeholder="e.g. Production Database Failover Procedure", id="title", required=true) }}
+                    {% if form.title.errors %}
+                        <div class="text-danger small mt-1">{{ form.title.errors[0] }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label for="description" class="form-label">Scope & Overview</label>
+                    {{ form.description(class="form-control form-control-devops", rows=3, placeholder="Summarize prerequisites, target environments, and triggers...", id="description") }}
+                    {% if form.description.errors %}
+                        <div class="text-danger small mt-1">{{ form.description.errors[0] }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="row">
+                    <div class="col-12 col-sm-4">
+                        <label for="status" class="form-label">Initial Status</label>
+                        {{ form.status(class="form-select form-select-devops", id="status") }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dynamic Steps Container -->
+            <div class="card card-devops p-3 p-md-4 mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h5 class="fw-bold text-white mb-0"><i class="bi bi-list-ol me-2 text-indigo"></i>Sequential Steps</h5>
+                        <p class="text-muted small mb-0">Define procedural commands and criteria for step completion</p>
+                    </div>
+                    <button type="button" class="btn btn-outline-devops btn-sm d-flex align-items-center gap-1" id="add-step-btn">
+                        <i class="bi bi-plus-lg"></i> Add Step
+                    </button>
+                </div>
+
+                <div id="steps-container">
+                    <!-- Default Initial Step Card -->
+                    <div class="step-card card-devops p-3 mb-3 border-secondary">
+                        <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-secondary">
+                            <span class="step-order-badge badge bg-indigo-subtle text-indigo border border-indigo-subtle px-2 py-1">Step 1</span>
+                            <button type="button" class="btn btn-sm btn-outline-danger btn-remove-step" style="display: none;">
+                                <i class="bi bi-trash"></i> Remove
+                            </button>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Step Title</label>
+                            <input type="text" class="form-control form-control-devops step-title-input" 
+                                placeholder="e.g. Verify Primary Cluster State" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Instructions / Commands</label>
+                            <textarea class="form-control form-control-devops font-monospace step-instructions-input" 
+                                rows="3" placeholder="Enter shell commands, SQL queries, or manual instructions..." required></textarea>
+                        </div>
+                        <div>
+                            <label class="form-label">Expected Outcome</label>
+                            <input type="text" class="form-control form-control-devops step-expected-input" 
+                                placeholder="e.g. Output indicates master is healthy and replication lag is 0">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="d-flex justify-content-end gap-2 pb-5">
+                <a href="{{ url_for('web.runbook_list') }}" class="btn btn-outline-devops">Cancel</a>
+                <button type="submit" class="btn btn-primary-devops d-flex align-items-center gap-2">
+                    <i class="bi bi-save"></i>
+                    <span>Save Runbook</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Groq AI Runbook Generator Modal -->
+{% if groq_configured %}
+<div class="modal fade" id="groqAiGeneratorModal" tabindex="-1" aria-labelledby="groqAiGeneratorModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content modal-content-devops">
+            <div class="modal-header">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-stars text-warning fs-5"></i>
+                    <h5 class="modal-title text-white" id="groqAiGeneratorModalLabel">Groq Llama Runbook Drafter</h5>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted small">
+                    Describe your operational workflow or incident scenario. Groq will generate the full sequence of steps and automatically insert them into this form.
+                </p>
+                <div class="mb-3">
+                    <label for="ai-prompt-input" class="form-label">Scenario Prompt</label>
+                    <textarea class="form-control form-control-devops font-monospace" id="ai-prompt-input" rows="4" 
+                        placeholder="e.g. Rollback a faulty Kubernetes deployment and restore database from hourly snapshot"></textarea>
+                </div>
+                <div id="ai-generation-spinner" class="d-none text-center my-3">
+                    <div class="spinner-border text-indigo" role="status"></div>
+                    <div class="text-muted small mt-2">Groq Llama model is drafting procedural steps...</div>
+                </div>
+                <div id="ai-generation-error" class="alert alert-danger d-none small"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-devops" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary-devops" id="btn-execute-ai-generation">
+                    <i class="bi bi-magic me-1"></i> Draft & Populate Form
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/runbook_form.js') }}"></script>
+{% endblock %}
