@@ -10,10 +10,18 @@ class Config:
     SECRET_KEY = os.getenv("SECRET_KEY", "runbookos-default-secret-key-3.12")
     
     # Strictly PostgreSQL
-    SQLALCHEMY_DATABASE_URI = os.getenv(
+    _raw_db_url = os.getenv(
         "DATABASE_URL",
         "postgresql://postgres@localhost:5432/runbookos"
-    )
+    ).strip()
+
+    # Cloud PostgreSQL providers (Neon, Supabase, Render, Railway, etc.)
+    # often supply 'postgres://' connection URIs.
+    # Normalize to 'postgresql://' as required by SQLAlchemy 1.4+ while enforcing strictly PostgreSQL.
+    if _raw_db_url.startswith("postgres://"):
+        _raw_db_url = _raw_db_url.replace("postgres://", "postgresql://", 1)
+
+    SQLALCHEMY_DATABASE_URI = _raw_db_url
     
     # Enforce strictly PostgreSQL
     if not SQLALCHEMY_DATABASE_URI.startswith("postgresql://") and not SQLALCHEMY_DATABASE_URI.startswith("postgresql+psycopg2://"):
@@ -49,10 +57,13 @@ class TestingConfig(Config):
     TESTING = True
     WTF_CSRF_ENABLED = False  # Allows straightforward form testing
     # PostgreSQL for testing (can use test db or default runbookos)
-    SQLALCHEMY_DATABASE_URI = os.getenv(
+    _test_db_url = os.getenv(
         "TEST_DATABASE_URL",
         os.getenv("DATABASE_URL", "postgresql://postgres@localhost:5432/runbookos")
-    )
+    ).strip()
+    if _test_db_url.startswith("postgres://"):
+        _test_db_url = _test_db_url.replace("postgres://", "postgresql://", 1)
+    SQLALCHEMY_DATABASE_URI = _test_db_url
 
 
 class ProductionConfig(Config):

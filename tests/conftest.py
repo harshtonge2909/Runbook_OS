@@ -65,6 +65,8 @@ def admin_user(app):
             user.set_password("AdminPass123!")
             db.session.add(user)
             db.session.commit()
+        db.session.refresh(user)
+        db.session.expunge(user)
         return user
 
 
@@ -83,6 +85,8 @@ def engineer_user(app):
             user.set_password("EngineerPass123!")
             db.session.add(user)
             db.session.commit()
+        db.session.refresh(user)
+        db.session.expunge(user)
         return user
 
 
@@ -90,13 +94,12 @@ def engineer_user(app):
 def admin_token(app, admin_user):
     """Generate JWT Bearer token for admin."""
     with app.app_context():
-        user = db.session.get(User, admin_user.id)
-        return generate_jwt_token(user)
+        return generate_jwt_token(admin_user)
 
 
 @pytest.fixture
 def engineer_token(app, engineer_user):
     """Generate JWT Bearer token for engineer."""
     with app.app_context():
-        user = db.session.get(User, engineer_user.id)
-        return generate_jwt_token(user)
+        return generate_jwt_token(engineer_user)
+

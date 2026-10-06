@@ -1,0 +1,8 @@
+.venv/
+.pytest_cache/
+tests/
+_legacy_archive_mern/
+__pycache__/
+*.pyc
+.env
+.git/
